@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import aesjs from 'aes-js';
 import forge from 'node-forge';
+import {aesEcbEncrypt} from './resources/aes';
 import { encrypt, pemToDer, parseRsaPublicKey } from './resources/rsa';
 
 function Signup() {
@@ -27,24 +28,27 @@ function Signup() {
     };
 
 
-    const encryptDataWithAes = (data, aesKey) => {
-        const keyBytes = aesjs.utils.hex.toBytes(aesKey);
-        const textBytes = aesjs.utils.utf8.toBytes(data);
+    // const encryptDataWithAes = (data, aesKey) => {
+    //     const keyBytes = aesjs.utils.hex.toBytes(aesKey);
+    //     const textBytes = aesjs.utils.utf8.toBytes(data);
 
-        const padSize = 16 - (textBytes.length % 16);
-        const paddedTextBytes = new Uint8Array(textBytes.length + padSize);
-        paddedTextBytes.set(textBytes);
-        paddedTextBytes.fill(padSize, textBytes.length); // Add padding
+    //     const padSize = 16 - (textBytes.length % 16);
+    //     const paddedTextBytes = new Uint8Array(textBytes.length + padSize);
+    //     paddedTextBytes.set(textBytes);
+    //     paddedTextBytes.fill(padSize, textBytes.length); // Add padding
 
-        const aesEcb = new aesjs.ModeOfOperation.ecb(keyBytes);
-        const encryptedBytes = aesEcb.encrypt(paddedTextBytes);
-        return aesjs.utils.hex.fromBytes(encryptedBytes);
-    };
+    //     const aesEcb = new aesjs.ModeOfOperation.ecb(keyBytes);
+    //     const encryptedBytes = aesEcb.encrypt(paddedTextBytes);
+    //     return aesjs.utils.hex.fromBytes(encryptedBytes);
+    // };
+    
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         const aesKey =  generateAesKey();
-        const encryptedPassword = encryptDataWithAes(password, aesKey);
+        // const encryptedPassword = encryptDataWithAes(password, aesKey);
+        const encryptedPassword = aesEcbEncrypt(password, aesKey);
+
         const publicKeyDecoded = parseRsaPublicKey(pemToDer(publicKey));
         const encryptedAesKey = encrypt(publicKeyDecoded.n, publicKeyDecoded.e, aesKey);
         
